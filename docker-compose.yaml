@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: "python manage.py runserver 0.0.0.0:${DJANGO_PORT}"
+    ports:
+      - "${DJANGO_EXPOSE_PORT}:${DJANGO_PORT}"
+    volumes:
+      - ./parta/:/code/
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - .env
+    networks:
+      - parta-network
+  db:
+    image: postgres:${POSTGRES_VERSION}
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - parta-network
+
+networks:
+  parta-network:

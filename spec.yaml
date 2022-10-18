@@ -1,0 +1,152 @@
+openapi: "3.0.3"
+info:
+  title: PARTA
+  description: |
+    Description for PARTA.
+  termsOfService: https://www.parta.com/terms/
+  contact:
+    name: PARTA Contact
+    url: https://www.parta.com/
+    email: support@parta.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: "2.0"
+
+servers:
+  - url: '{scheme}://{host}/v1'
+    variables:
+      host:
+        default: "0.0.0.0"
+      scheme:
+        enum:
+          - 'https'
+          - 'http'
+        default: 'http'
+
+security:
+  - bearerAuth: [ ]
+
+paths:
+  /bucket/subjects/{grade}:
+    get:
+      summary: List subjects grade filtering
+      operationId: ListSubjects
+      tags:
+        - subjects
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: grade
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subject"
+
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /bucket/bucket/:
+    post:
+      summary: Calculate price for choice subjects
+      operationId: Bucket
+      tags:
+        - bucket
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Bucket"
+      responses:
+        '200':
+          description: ok
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - code
+        - message
+        - parent
+        - validation_error
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        parent:
+          type: object
+          nullable: true
+          additionalProperties: {}
+        validation_error:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    Subject:
+      type: object
+      properties:
+        pk:
+          type: number
+        name:
+         type: string
+        grade:
+         type: number
+        price:
+          type: object
+          properties:
+            1:
+              type: object
+              properties:
+                price_for_one:
+                  type: string
+            2:
+              type: object
+              properties:
+                price_for_one:
+                  type: string
+
+
+
+    Bucket:
+      type: object
+      properties:
+        name:
+          type: object
+          properties:
+            price_with_discount:
+              type: number
+            price_without_discount:
+              type: number
